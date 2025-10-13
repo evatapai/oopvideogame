@@ -1,0 +1,45 @@
+html,
+body {
+  margin: 0;
+  background: #0f1226;
+  color: #e7ecff;
+  font-family: system-ui, sans-serif;
+}
+
+#wrap {
+  max-width: 1000px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+h1 {
+  font-size: 18px;
+  margin: 0;
+  opacity: 0.9;
+  letter-spacing: 0.4px;
+}
+
+footer {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.pill {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #1b2052;
+  border: 1px solid #2f3576;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
