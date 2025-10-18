@@ -8,6 +8,9 @@ export class Player extends Character {
   accel: number;
   friction: number;
   maxMove: number;
+  experience: number;
+  experienceToNextLevel: number;
+  level: number;
 
   constructor(x: number, y: number, weapon: Weapon) {
     super(x, y);
@@ -15,6 +18,34 @@ export class Player extends Character {
     this.accel = 900;
     this.friction = 8;
     this.maxMove = this.speed;
+    this.experience = 0;
+    this.experienceToNextLevel = 100;
+    this.level = 1;
+  }
+
+  gainExperience(amount: number): boolean {
+    this.experience += amount;
+    if (this.experience >= this.experienceToNextLevel) {
+      this.levelUp();
+      return true;
+    }
+    return false;
+  }
+
+  levelUp(): void {
+    this.level++;
+    this.experience = 0;
+    this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * 1.5);
+
+    // Stat boosts on level up
+    this.maxHp += 20;
+    this._hp = this.maxHp; // Full heal on level up
+    this.speed += 5;
+    this.maxMove = this.speed;
+  }
+
+  getExperienceProgress(): number {
+    return this.experience / this.experienceToNextLevel;
   }
 
   handleInput(keys: Set<string>, dt: number): void {
