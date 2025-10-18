@@ -56,8 +56,7 @@ Git is a tool that helps you download and manage code projects.
 
 Now you need a program to view and edit your code files. We'll use VS Code - it's free and very popular!
 
-**What is VS Code?**
-VS Code (Visual Studio Code) is like a super-powered text editor made specifically for writing code. It helps you see your files, edit them, and shows your code in nice colors to make it easier to read.
+**What is VS Code?** VS Code (Visual Studio Code) is like a super-powered text editor made specifically for writing code. It helps you see your files, edit them, and shows your code in nice colors to make it easier to read.
 
 **How to Install VS Code:**
 
@@ -203,11 +202,11 @@ Happy coding!
 
 # Magyar Verzió
 
-## 1. Üdvözlünk!
+## 1. Szia!
 
-Szia! Ez egy kezdő videojáték projekt, ahol megtanulhatsz programozni a Claude Code (egy mesterséges intelligencia programozó asszisztens) segítségével.
+Ez egy kezdő videojáték projekt, ahol megtanulhatsz programozni a Claude Code (egy mesterséges intelligencia programozó asszisztens) segítségével.
 
-A játékban jelenleg egy játékos karaktert látsz, akit a nyílbillentyűkkel tudsz mozgatni. De ez csak a kezdet - hozzáadhatsz meg tobb ellenséget, erősítéseket, hangokat, és még sok minden mást!
+A játékban jelenleg egy játékos karaktert es nehany ellenseget látsz. A jatekosod a nyílbillentyűkkel tudod mozgatni es a space-szel tudsz loni. De ez csak a kezdet - hozzáadhatsz meg tobb ellenséget, erősítéseket, hangokat, és még sok minden mást!
 
 A legjobb az egészben? Nem kell mindent tudnod a programozásról. A Claude Code lépésről lépésre segít tanulni és új funkciókat építeni.
 
@@ -253,8 +252,7 @@ A "klónozás" azt jelenti, hogy lemásolod a játékot a saját számítógépe
 
 Most szükséged van egy programra, amivel megnézheted és szerkesztheted a kódfájljaidat. A VS Code-ot fogjuk használni - ingyenes és nagyon népszerű!
 
-**Mi az a VS Code?**
-A VS Code (Visual Studio Code) olyan, mint egy szuper-erős szövegszerkesztő, ami kifejezetten kódírásra készült. Segít látni a fájljaidat, szerkeszteni őket, és szép színekkel mutatja a kódodat, hogy könnyebb legyen olvasni.
+**Mi az a VS Code?** A VS Code (Visual Studio Code) olyan, mint egy szuper-erős szövegszerkesztő, ami kifejezetten kódírásra készült. Segít látni a fájljaidat, szerkeszteni őket, és szép színekkel mutatja a kódodat, hogy könnyebb legyen olvasni.
 
 **Hogyan telepítsd a VS Code-ot:**
 
