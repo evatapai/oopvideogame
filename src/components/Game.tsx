@@ -5,6 +5,7 @@ import { Goblin } from '../game/entities/Goblin';
 import { Slime } from '../game/entities/Slime';
 import { Skeleton } from '../game/entities/Skeleton';
 import { Wand } from '../game/weapons/Wand';
+import { Sword } from '../game/weapons/Sword';
 import { Projectile } from '../game/entities/Projectile';
 import { Particle } from '../game/entities/Particle';
 import { rand, dist2 } from '../game/utils/helpers';
@@ -98,9 +99,11 @@ export const Game = ({ onScoreChange, onWaveChange, onWeaponChange, onExperience
     if (!ctx) return;
 
     // Initialize scene
-    const weapon = new Wand();
-    const player = new Player(canvasSize.width / 2, canvasSize.height / 2, weapon);
-    weapon.owner = player;
+    const rangedWeapon = new Wand();
+    const meleeWeapon = new Sword();
+    const player = new Player(canvasSize.width / 2, canvasSize.height / 2, rangedWeapon, meleeWeapon);
+    rangedWeapon.owner = player;
+    meleeWeapon.owner = player;
 
     const scene: Scene = {
       w: canvasSize.width,
@@ -146,10 +149,22 @@ export const Game = ({ onScoreChange, onWaveChange, onWeaponChange, onExperience
       const dt = Math.min(0.033, (now - last) / 1000);
       last = now;
 
-      // Input-driven attack
-      if (keysRef.current.has(' ') || keysRef.current.has('Space')) {
-        scene.player.attack(scene);
+      // Input-driven attacks
+      if (keysRef.current.has('Control') || keysRef.current.has('ctrl')) {
+        scene.player.attack(scene); // Ranged attack (Wand)
       }
+      if (keysRef.current.has(' ') || keysRef.current.has('Space')) {
+        scene.player.meleeAttack(scene); // Melee attack (Sword)
+      }
+      if (keysRef.current.has('z') || keysRef.current.has('Z')) {
+        scene.player.smallAoeAttack(scene); // Small AoE attack (4cm range)
+      }
+      if (keysRef.current.has('Alt') || keysRef.current.has('Option')) {
+        scene.player.ultimateAttack(scene); // Ultimate AoE attack (200cm range)
+      }
+
+      // Shield defense
+      scene.player.isShielding = keysRef.current.has('Meta') || keysRef.current.has('Command');
 
       // Update entities
       scene.player.update(dt, scene, keysRef.current);
