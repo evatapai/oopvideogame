@@ -26,14 +26,13 @@ interface GameProps {
   onScoreChange: (score: number) => void;
   onWaveChange: (wave: number) => void;
   onWeaponChange: (weaponName: string) => void;
-  onExperienceChange: (level: number, experience: number, experienceToNextLevel: number) => void;
 }
 
-export const Game = ({ onScoreChange, onWaveChange, onWeaponChange, onExperienceChange }: GameProps) => {
+export const Game = ({ onScoreChange, onWaveChange, onWeaponChange }: GameProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<Scene | null>(null);
   const keysRef = useRef<Set<string>>(new Set());
-  const animationFrameRef = useRef<number | undefined>(undefined);
+  const animationFrameRef = useRef<number>();
 
   const [canvasSize] = useState({ width: 960, height: 540 });
 
@@ -117,7 +116,6 @@ export const Game = ({ onScoreChange, onWaveChange, onWeaponChange, onExperience
 
     sceneRef.current = scene;
     onWeaponChange(player.weapon.name);
-    onExperienceChange(player.level, player.experience, player.experienceToNextLevel);
     spawnWave(scene, 6);
 
     // Event listeners
@@ -157,9 +155,9 @@ export const Game = ({ onScoreChange, onWaveChange, onWeaponChange, onExperience
       scene.projectiles.forEach((p) => p.update(dt));
       scene.fx.forEach((p) => p.update(dt));
 
-      // Collisions: player projectiles vs enemies
+      // Collisions: projectiles vs enemies
       for (const p of scene.projectiles) {
-        if (p.dead || p.isEnemyProjectile) continue;
+        if (p.dead) continue;
         for (const e of scene.enemies) {
           if (e.dead) continue;
           const r = 18;
@@ -177,41 +175,9 @@ export const Game = ({ onScoreChange, onWaveChange, onWeaponChange, onExperience
             if (e.dead) {
               scene.score += 10;
               onScoreChange(scene.score);
-
-              // Gain experience from kill
-              const xpGain = 25;
-              const leveledUp = scene.player.gainExperience(xpGain);
-              onExperienceChange(scene.player.level, scene.player.experience, scene.player.experienceToNextLevel);
-
-              if (leveledUp) {
-                // Level up particles
-                for (let i = 0; i < 30; i++) {
-                  scene.fx.push(
-                    new Particle(scene.player.x, scene.player.y, rand(-200, 200), rand(-200, 200), rand(0.3, 0.6), rand(2, 4))
-                  );
-                }
-              }
             }
             break;
           }
-        }
-      }
-
-      // Collisions: enemy projectiles vs player
-      for (const p of scene.projectiles) {
-        if (p.dead || !p.isEnemyProjectile) continue;
-        const r = 16;
-        if (dist2(p.x, p.y, scene.player.x, scene.player.y) < r * r) {
-          scene.player.takeDamage(p.damage);
-          p.dead = true;
-
-          // Particles on hit
-          for (let i = 0; i < 8; i++) {
-            scene.fx.push(
-              new Particle(scene.player.x, scene.player.y, rand(-100, 100), rand(-100, 100), rand(0.15, 0.3), rand(1, 2))
-            );
-          }
-          break;
         }
       }
 
@@ -258,7 +224,7 @@ export const Game = ({ onScoreChange, onWaveChange, onWeaponChange, onExperience
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [canvasSize, onScoreChange, onWaveChange, onWeaponChange, onExperienceChange]);
+  }, [canvasSize, onScoreChange, onWaveChange, onWeaponChange]);
 
   return (
     <canvas

@@ -53,8 +53,7 @@ export class Skeleton extends Enemy {
             (dx / len) * speed,
             (dy / len) * speed,
             8,
-            15, // Damage
-            true // isEnemyProjectile
+            15 // Damage
           )
         );
       }
