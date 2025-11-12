@@ -4,15 +4,18 @@ import { Enemy } from '../game/entities/Enemy';
 import { Goblin } from '../game/entities/Goblin';
 import { Slime } from '../game/entities/Slime';
 import { Skeleton } from '../game/entities/Skeleton';
+import { Boss } from '../game/entities/Boss';
 import { Wand } from '../game/weapons/Wand';
 import { Projectile } from '../game/entities/Projectile';
 import { Particle } from '../game/entities/Particle';
+import { Companion } from '../game/entities/Companion';
 import { rand, dist2 } from '../game/utils/helpers';
 
 interface Scene {
   w: number;
   h: number;
   player: Player;
+  companion: Companion;
   enemies: Enemy[];
   projectiles: Projectile[];
   fx: Particle[];
@@ -101,10 +104,13 @@ export const Game = ({ onScoreChange, onWaveChange, onWeaponChange }: GameProps)
     const player = new Player(canvasSize.width / 2, canvasSize.height / 2, weapon);
     weapon.owner = player;
 
+    const companion = new Companion(player.x, player.y);
+
     const scene: Scene = {
       w: canvasSize.width,
       h: canvasSize.height,
       player,
+      companion,
       enemies: [],
       projectiles: [],
       fx: [],
@@ -113,6 +119,8 @@ export const Game = ({ onScoreChange, onWaveChange, onWeaponChange }: GameProps)
       score: 0,
       mouse: { x: canvasSize.width / 2, y: canvasSize.height / 2 },
     };
+
+    let pullCooldown = 0;
 
     sceneRef.current = scene;
     onWeaponChange(player.weapon.name);
@@ -144,20 +152,55 @@ export const Game = ({ onScoreChange, onWaveChange, onWeaponChange }: GameProps)
       const dt = Math.min(0.033, (now - last) / 1000);
       last = now;
 
+      // Update pull cooldown
+      if (pullCooldown > 0) pullCooldown -= dt;
+
       // Input-driven attack
       if (keysRef.current.has(' ') || keysRef.current.has('Space')) {
         scene.player.attack(scene);
       }
 
+      // Pull closest enemy with 'E' key
+      if ((keysRef.current.has('e') || keysRef.current.has('E')) && pullCooldown <= 0) {
+        // Find closest enemy
+        let closest: Enemy | null = null;
+        let closestDist = Infinity;
+
+        for (const e of scene.enemies) {
+          if (e.dead) continue;
+          const d = dist2(e.x, e.y, scene.player.x, scene.player.y);
+          if (d < closestDist) {
+            closestDist = d;
+            closest = e;
+          }
+        }
+
+        // Pull closest enemy to player
+        if (closest) {
+          const dx = scene.player.x - closest.x;
+          const dy = scene.player.y - closest.y;
+          const dist = Math.hypot(dx, dy);
+          const pullDistance = 100;
+
+          if (dist > 50) {
+            closest.x += (dx / dist) * pullDistance;
+            closest.y += (dy / dist) * pullDistance;
+          }
+
+          pullCooldown = 0.5;
+        }
+      }
+
       // Update entities
       scene.player.update(dt, scene, keysRef.current);
+      scene.companion.update(dt, scene.player.x, scene.player.y);
       scene.enemies.forEach((e) => e.update(dt, scene));
       scene.projectiles.forEach((p) => p.update(dt));
       scene.fx.forEach((p) => p.update(dt));
 
       // Collisions: projectiles vs enemies
       for (const p of scene.projectiles) {
-        if (p.dead) continue;
+        if (p.dead || p.fromEnemy) continue;
         for (const e of scene.enemies) {
           if (e.dead) continue;
           const r = 18;
@@ -181,12 +224,62 @@ export const Game = ({ onScoreChange, onWaveChange, onWeaponChange }: GameProps)
         }
       }
 
+      // Collisions: enemy projectiles vs player
+      for (const p of scene.projectiles) {
+        if (p.dead || !p.fromEnemy) continue;
+        const r = 18;
+        if (dist2(p.x, p.y, scene.player.x, scene.player.y) < r * r) {
+          scene.player.takeDamage(p.damage);
+          p.dead = true;
+
+          // Particles on hit
+          for (let i = 0; i < 5; i++) {
+            scene.fx.push(
+              new Particle(scene.player.x, scene.player.y, rand(-80, 80), rand(-80, 80), rand(0.1, 0.3), rand(1, 2))
+            );
+          }
+        }
+      }
+
       // Enemies touch player
       for (const e of scene.enemies) {
         if (e.dead) continue;
-        if (dist2(e.x, e.y, scene.player.x, scene.player.y) < 26 * 26) {
-          scene.player.takeDamage(15 * dt);
+        const touchRadius = e instanceof Boss ? 40 * 40 : 26 * 26;
+        if (dist2(e.x, e.y, scene.player.x, scene.player.y) < touchRadius) {
+          const damage = e instanceof Boss ? 50 : 15;
+          scene.player.takeDamage(damage * dt);
         }
+      }
+
+      // Companion damages enemies
+      for (const e of scene.enemies) {
+        if (e.dead) continue;
+        const r = 20;
+        if (dist2(e.x, e.y, scene.companion.x, scene.companion.y) < r * r) {
+          if (e.companionCooldown <= 0) {
+            e.takeDamage(3);
+            e.companionCooldown = 0.5;
+          }
+        }
+      }
+
+      // Check if player is dead - Game Over
+      if (scene.player.hp <= 0) {
+        // Reset the game
+        scene.player.x = canvasSize.width / 2;
+        scene.player.y = canvasSize.height / 2;
+        scene.player._hp = scene.player.maxHp;
+        scene.player.vx = 0;
+        scene.player.vy = 0;
+        scene.enemies = [];
+        scene.projectiles = [];
+        scene.fx = [];
+        scene.wave = 1;
+        scene.score = 0;
+        onScoreChange(0);
+        onWaveChange(1);
+        spawnWave(scene, 6);
+        return; // Skip this frame
       }
 
       // Cleanup
@@ -198,6 +291,13 @@ export const Game = ({ onScoreChange, onWaveChange, onWeaponChange }: GameProps)
       if (scene.enemies.length === 0) {
         scene.wave++;
         spawnWave(scene, 6 + Math.floor(scene.wave * 1.5));
+
+        // Spawn boss every 5 waves
+        if (scene.wave % 5 === 0) {
+          const boss = new Boss(scene.w / 2, -50);
+          scene.enemies.push(boss);
+        }
+
         onWaveChange(scene.wave);
       }
 
@@ -208,6 +308,7 @@ export const Game = ({ onScoreChange, onWaveChange, onWeaponChange }: GameProps)
       scene.fx.forEach((p) => p.draw(ctx));
       scene.projectiles.forEach((p) => p.draw(ctx));
       scene.enemies.forEach((e) => e.draw(ctx));
+      scene.companion.draw(ctx);
       scene.player.draw(ctx);
 
       animationFrameRef.current = requestAnimationFrame(loop);

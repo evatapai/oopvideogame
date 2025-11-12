@@ -45,5 +45,11 @@ export class Character extends Entity {
     ctx.fillRect(this.x - 24, this.y - 34, w * (this._hp / this.maxHp), h);
     ctx.strokeStyle = '#203a31';
     ctx.strokeRect(this.x - 24, this.y - 34, w, h);
+
+    // Display HP numbers
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${Math.ceil(this._hp)}/${this.maxHp}`, this.x, this.y - 38);
   }
 }

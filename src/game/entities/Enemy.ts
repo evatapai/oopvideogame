@@ -3,11 +3,14 @@ import { clamp } from '../utils/helpers';
 import type { Scene } from '../types';
 
 export class Enemy extends Character {
+  companionCooldown: number;
+
   constructor(x: number, y: number) {
     super(x, y);
     this.speed = 110;
     this.maxHp = 60;
     this._hp = this.maxHp;
+    this.companionCooldown = 0;
   }
 
   think(dt: number, scene: Scene): void {
@@ -21,6 +24,11 @@ export class Enemy extends Character {
     // Bounds
     this.x = clamp(this.x, 12, scene.w - 12);
     this.y = clamp(this.y, 12, scene.h - 12);
+
+    // Update companion cooldown
+    if (this.companionCooldown > 0) {
+      this.companionCooldown -= dt;
+    }
   }
 
   draw(ctx: CanvasRenderingContext2D): void {

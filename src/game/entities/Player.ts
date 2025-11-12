@@ -11,6 +11,8 @@ export class Player extends Character {
 
   constructor(x: number, y: number, weapon: Weapon) {
     super(x, y);
+    this.maxHp = 150;
+    this._hp = this.maxHp;
     this.weapon = weapon;
     this.accel = 900;
     this.friction = 8;
@@ -66,6 +68,26 @@ export class Player extends Character {
     if (this.hitTimer > 0) {
       ctx.filter = 'brightness(220%)';
     }
+
+    // Shield - gray circle around character
+    ctx.strokeStyle = '#808080';
+    ctx.lineWidth = 3;
+    ctx.fillStyle = 'rgba(128, 128, 128, 0.2)';
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, 22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Panda ears
+    ctx.fillStyle = '#18302a';
+    // Left ear
+    ctx.beginPath();
+    ctx.arc(this.x - 10, this.y - 12, 6, 0, Math.PI * 2);
+    ctx.fill();
+    // Right ear
+    ctx.beginPath();
+    ctx.arc(this.x + 10, this.y - 12, 6, 0, Math.PI * 2);
+    ctx.fill();
 
     // Body
     ctx.fillStyle = '#6fe0a6';
